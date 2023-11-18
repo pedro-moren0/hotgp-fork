@@ -2,7 +2,7 @@
 
 module Main where
 
-import Benchmark.Problems (allProblemIds, runProblem)
+import Benchmark.Problems (allProblemIds, runProblem, runProblemTask1, task1)
 import Data.List (sort)
 import Prune (prune)
 import System.Directory (createDirectoryIfMissing)
@@ -21,6 +21,9 @@ main = do
     Nothing -> do
       case args of
         ["prune"] -> prune
+        ["task1"] -> task1 workDir
+        ["itask1", pop, eval, seed, name] ->
+          runProblemTask1 workDir (read pop :: Int) (read eval :: Int) (read seed :: Int) name
         _ -> showHelp
     Just (name, seed) -> runProblem workDir seed name
 

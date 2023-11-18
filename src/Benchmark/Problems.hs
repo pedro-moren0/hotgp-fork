@@ -1,6 +1,6 @@
 {-# LANGUAGE GADTs #-}
 
-module Benchmark.Problems (runProblem, allProblemIds, searchCxRateProblem, getProblem, Problem (MkProblem)) where
+module Benchmark.Problems (task1, runProblemTask1, runProblem, allProblemIds, searchCxRateProblem, getProblem, Problem (MkProblem)) where
 
 import Benchmark.Core
 import Benchmark.Problems.CollatzNumbers (collatzNumbers)
@@ -28,7 +28,7 @@ import Benchmark.Problems.Syllables (syllables)
 import Benchmark.Problems.VectorAverage (vectorAverage)
 import Benchmark.Problems.VectorsSummed (vectorsSummed)
 import Benchmark.Problems.WallisPi (wallisPi)
-import Benchmark.Run (runBenchmark)
+import Benchmark.Run (runBenchmark, runBenchmarkTask1)
 import Benchmark.RunSearch (searchCxRate)
 import Data.List (find)
 import Data.Maybe (fromMaybe)
@@ -90,3 +90,14 @@ searchCxRateProblem workDir foldNumber cxRate problemName = case getProblem prob
   Nothing -> error "Unknown benchmark name"
   Just (MkProblem bench) -> do
     searchCxRate workDir foldNumber cxRate bench
+
+task1 :: FilePath -> IO ()
+task1 workDir = sequence_ $ do
+  (MkProblem b) <- allProblems
+  [runBenchmarkTask1 workDir] <*> [100, 150 .. 500] <*> [10000, 15000 .. 100000] <*> [0 .. 10] <*> [b]
+
+runProblemTask1 :: FilePath -> Int -> Int -> Int -> String -> IO ()
+runProblemTask1 workDir pop eval seed problemName = case getProblem problemName of
+  Nothing -> error "Unknown benchmark name"
+  Just (MkProblem bench) -> do
+    runBenchmarkTask1 workDir pop eval seed bench
