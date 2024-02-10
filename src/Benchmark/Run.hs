@@ -87,8 +87,9 @@ checkpointFilename :: FilePath -> Int -> Benchmark a -> FilePath
 checkpointFilename _ seed benchmark = "./checkpoint/" <> "s" <> show seed <> "_" <> getBenchmarkId benchmark <> ".checkpoint"
 
 checkpointFilenameTask1 :: FilePath -> Int -> Int -> Int -> Benchmark a -> FilePath
-checkpointFilenameTask1 _ pop eval seed benchmark =
-  "./checkpoint/"
+checkpointFilenameTask1 workDir pop eval seed benchmark =
+    workDir
+    <> "/checkpoint/"
     <> "p"
     <> show pop
     <> "_e"

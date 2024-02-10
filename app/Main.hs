@@ -10,7 +10,7 @@ import System.Environment (getArgs)
 import Text.Read (readMaybe)
 
 workDir :: FilePath
-workDir = "./"
+workDir = "/home-ext/pmoreno/"
 
 main :: IO ()
 main = do

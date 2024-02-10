@@ -67,6 +67,17 @@ allProblems =
     MkProblem wallisPi
   ]
 
+someProblems :: [Problem]
+someProblems =
+  [
+    --MkProblem compareStringLengths,
+    --MkProblem countOdds,
+    --MkProblem digits,
+    --MkProblem doubleLetters,
+    MkProblem evenSquares,
+    MkProblem forLoopIndex
+  ]
+
 getProblem :: String -> Maybe Problem
 getProblem name = find byId allProblems
   where
@@ -93,8 +104,8 @@ searchCxRateProblem workDir foldNumber cxRate problemName = case getProblem prob
 
 task1 :: FilePath -> IO ()
 task1 workDir = sequence_ $ do
-  (MkProblem b) <- allProblems
-  [runBenchmarkTask1 workDir] <*> [100, 150 .. 500] <*> [10000, 15000 .. 100000] <*> [0 .. 10] <*> [b]
+  (MkProblem b) <- someProblems
+  [runBenchmarkTask1 workDir] <*> [50, 100 .. 500] <*> [5000, 10000 .. 100000] <*> [0 .. 10] <*> [b]
 
 runProblemTask1 :: FilePath -> Int -> Int -> Int -> String -> IO ()
 runProblemTask1 workDir pop eval seed problemName = case getProblem problemName of
