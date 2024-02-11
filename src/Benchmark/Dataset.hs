@@ -10,7 +10,7 @@ import Data.Either (fromRight)
 import Data.HashMap.Strict ((!?))
 import Data.List (intercalate)
 import Data.List.Split (chunksOf, splitOn)
-import Data.Maybe (fromJust, fromMaybe)
+import Data.Maybe (fromJust, fromMaybe, isNothing)
 import qualified Data.Vector as V
 import Grammar.Core (Lit)
 import System.Random (mkStdGen)
@@ -23,6 +23,15 @@ loadTrainAndTestSet :: FilePath -> Benchmark a -> IO (Dataset, Dataset)
 loadTrainAndTestSet workDir benchmark = do
   downloadBenchmark workDir (_datasetName benchmark)
   random <- readJson workDir benchmark "-random.json"
+  edge <- readJson workDir benchmark "-edge.json"
+  let (trainSet, remaining) = splitAt (_trainCases benchmark) $ edge <> random
+      testSet = take (_testCases benchmark) remaining
+  return (trainSet, testSet)
+
+loadTrainAndTestSetTask1 :: FilePath -> Maybe Int -> Benchmark a -> IO (Dataset, Dataset)
+loadTrainAndTestSetTask1 workDir randomSetSize benchmark = do
+  downloadBenchmark workDir (_datasetName benchmark)
+  random <- maybe readJson readJsonTask1 randomSetSize workDir benchmark "-random.json"
   edge <- readJson workDir benchmark "-edge.json"
   let (trainSet, remaining) = splitAt (_trainCases benchmark) $ edge <> random
       testSet = take (_testCases benchmark) remaining
@@ -47,6 +56,23 @@ readJson :: FilePath -> Benchmark a -> String -> IO [([Lit], Lit)]
 readJson workDir benchmark suffix = do
   fileContents <- readFile fileName
   let contents = parseJsonLine <$> lines fileContents
+  return $ transform <$> contents
+  where
+    fileName :: FilePath
+    fileName = workDir <> csvDirs <> _datasetName benchmark <> suffix
+
+    parseOutput :: OutputParser
+    parseOutput = fromMaybe (defaultOutputParser (_outputType benchmark)) (_customOutputParser benchmark)
+
+    transform :: Object -> ([Lit], Lit)
+    transform obj = (zipWith parseJsonLit (_inputTypes benchmark) xs, parseOutput obj)
+      where
+        xs = [obj ^. ("input" <> show i) | i <- [1 ..]]
+
+readJsonTask1 :: Int -> FilePath -> Benchmark a -> String -> IO [([Lit], Lit)]
+readJsonTask1 size workDir benchmark suffix = do
+  fileContents <- readFile fileName
+  let contents = parseJsonLine <$> (take size . lines) fileContents
   return $ transform <$> contents
   where
     fileName :: FilePath

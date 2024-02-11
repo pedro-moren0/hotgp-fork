@@ -51,12 +51,20 @@ runBenchmark workDir seed benchmark = do
   writeFile finalResultFile $ logBest testSet (_indTree $ head $ SL.fromSortedList finalPop)
   writeFile jsonFile $ jsonBest (getBenchmarkId benchmark) seed nEvals testSet (head $ SL.fromSortedList finalPop)
 
-runBenchmarkTask1 :: (Fitness a, Monoid a, Show a) => FilePath -> Int -> Int -> Int -> Benchmark a -> IO ()
-runBenchmarkTask1 workDir popSize evalNumber seed benchmark = do
+runBenchmarkTask1 ::
+  (Fitness a, Monoid a, Show a) =>
+  FilePath ->
+  Maybe Int ->
+  Int ->
+  Int ->
+  Int ->
+  Benchmark a ->
+  IO ()
+runBenchmarkTask1 workDir datasetSize popSize evalNumber seed benchmark = do
   hSetBuffering stdout $ BlockBuffering Nothing
-  identifier <- logFileIdentifierTask1 benchmark popSize evalNumber seed
+  identifier <- logFileIdentifierTask1 datasetSize benchmark popSize evalNumber seed
   (logFileHandle, finalResultFile, jsonFile) <- prepareLogFiles identifier workDir benchmark
-  (trainSet, testSet) <- loadTrainAndTestSet workDir benchmark
+  (trainSet, testSet) <- loadTrainAndTestSetTask1 workDir datasetSize benchmark
 
   let cfg = makeConfigTask1 popSize evalNumber trainSet benchmark
       checkpoint = checkpointFilenameTask1 workDir popSize evalNumber seed benchmark
@@ -68,8 +76,6 @@ runBenchmarkTask1 workDir popSize evalNumber seed benchmark = do
 
   (finalPop, nEvals) <- evalStateT (runAndLog cfg logToFile checkpoint) $ mkStdGen seed
 
-  -- putStrLn $ pp $ finalPop
-
   hClose logFileHandle
   writeFile finalResultFile $ logBest testSet (_indTree $ head $ SL.fromSortedList finalPop)
   writeFile jsonFile $ jsonBest (getBenchmarkId benchmark) seed nEvals testSet (head $ SL.fromSortedList finalPop)
@@ -79,16 +85,26 @@ logFileIdentifier benchmark seed = do
   time <- getCurrentTime
   return $ show time <> "_s" <> show seed <> "_" <> getBenchmarkId benchmark
 
-logFileIdentifierTask1 :: Benchmark a -> Int -> Int -> Int -> IO String
-logFileIdentifierTask1 benchmark popSize evalNum seed = do
-  return $ "p" <> show popSize <> "_e" <> show evalNum <> "_s" <> show seed <> "_" <> getBenchmarkId benchmark
+logFileIdentifierTask1 :: Maybe Int -> Benchmark a -> Int -> Int -> Int -> IO String
+logFileIdentifierTask1 datasetSize benchmark popSize evalNum seed =
+  do
+    return
+    $ "p" <> show popSize
+      <> "_e"
+      <> show evalNum
+      <> "_s"
+      <> show seed
+      <> "_"
+      <> getBenchmarkId benchmark
+      <> "_l"
+      <> maybe "" show datasetSize
 
 checkpointFilename :: FilePath -> Int -> Benchmark a -> FilePath
 checkpointFilename _ seed benchmark = "./checkpoint/" <> "s" <> show seed <> "_" <> getBenchmarkId benchmark <> ".checkpoint"
 
 checkpointFilenameTask1 :: FilePath -> Int -> Int -> Int -> Benchmark a -> FilePath
 checkpointFilenameTask1 workDir pop eval seed benchmark =
-    workDir
+  workDir
     <> "/checkpoint/"
     <> "p"
     <> show pop
