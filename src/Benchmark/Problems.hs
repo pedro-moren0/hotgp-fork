@@ -69,10 +69,11 @@ allProblems =
 
 someProblems :: [Problem]
 someProblems =
-  [ MkProblem compareStringLengths,
-    -- MkProblem countOdds,
-    MkProblem digits,
-    MkProblem doubleLetters,
+  [
+    --MkProblem compareStringLengths,
+    --MkProblem countOdds,
+    --MkProblem digits,
+    --MkProblem doubleLetters,
     MkProblem evenSquares,
     MkProblem forLoopIndex
   ]
@@ -101,17 +102,13 @@ searchCxRateProblem workDir foldNumber cxRate problemName = case getProblem prob
   Just (MkProblem bench) -> do
     searchCxRate workDir foldNumber cxRate bench
 
-task1 :: FilePath -> Maybe Int -> IO ()
-task1 workDir datasetSize = sequence_ $ do
+task1 :: FilePath -> IO ()
+task1 workDir = sequence_ $ do
   (MkProblem b) <- someProblems
-  [runBenchmarkTask1 workDir datasetSize]
-    <*> [50, 100 .. 500]
-    <*> [5000, 10000 .. 100000]
-    <*> [0 .. 10]
-    <*> [b]
+  [runBenchmarkTask1 workDir] <*> [50, 100 .. 500] <*> [5000, 10000 .. 100000] <*> [0 .. 10] <*> [b]
 
 runProblemTask1 :: FilePath -> Int -> Int -> Int -> String -> IO ()
 runProblemTask1 workDir pop eval seed problemName = case getProblem problemName of
   Nothing -> error "Unknown benchmark name"
   Just (MkProblem bench) -> do
-    runBenchmarkTask1 workDir Nothing pop eval seed bench
+    runBenchmarkTask1 workDir pop eval seed bench

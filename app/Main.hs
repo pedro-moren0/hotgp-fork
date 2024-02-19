@@ -10,7 +10,6 @@ import System.Environment (getArgs)
 import Text.Read (readMaybe)
 
 workDir :: FilePath
--- workDir = "."
 workDir = "/home-ext/pmoreno/"
 
 main :: IO ()
@@ -22,9 +21,7 @@ main = do
     Nothing -> do
       case args of
         ["prune"] -> prune
-        ["task1"] -> task1 workDir (Nothing :: Maybe Int)
-        ["task1", "random-size", randomSetSize] ->
-          task1 workDir (readMaybe randomSetSize :: Maybe Int)
+        ["task1"] -> task1 workDir
         ["itask1", pop, eval, seed, name] ->
           runProblemTask1 workDir (read pop :: Int) (read eval :: Int) (read seed :: Int) name
         _ -> showHelp
